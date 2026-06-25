@@ -1,2 +1,37 @@
 //@version=5
 indicator("Smart Liquidity Trader V1", overlay=true)
+
+// ===== SESSION ENGINE =====
+
+// Visual toggles for Phase 1 chart verification
+var string grpSession = "Session Engine"
+showAsiaSession = input.bool(true, "Show Asia Session",    group=grpSession)
+showLondonKZ    = input.bool(true, "Show London Killzone", group=grpSession)
+showNYAMKZ      = input.bool(true, "Show NY AM Killzone",  group=grpSession)
+showNYPMKZ      = input.bool(true, "Show NY PM Killzone",  group=grpSession)
+showNewDay      = input.bool(true, "Show New Day Marker",  group=grpSession)
+
+// UTC new-day detection — compares UTC calendar day between current and previous bar.
+// On the first bar of history time[1] is na, so dayofmonth returns na and != returns false (no false trigger).
+isNewDay = dayofmonth(time, "UTC") != dayofmonth(time[1], "UTC")
+
+// Session window booleans — all windows in explicit UTC.
+// time() with a session string returns na outside the session; not na() converts that to a boolean flag.
+inAsiaSession = not na(time(timeframe.period, "0000-0400", "UTC"))  // level-calc only, not tradeable
+inLondonKZ    = not na(time(timeframe.period, "0600-0900", "UTC"))  // 06:00–09:00 UTC
+inNYAMKZ      = not na(time(timeframe.period, "1200-1330", "UTC"))  // 12:00–13:30 UTC
+inNYPMKZ      = not na(time(timeframe.period, "1330-2000", "UTC"))  // 13:30–20:00 UTC
+
+// Combined tradeable session — true when any killzone is active.
+isTradeableSession = inLondonKZ or inNYAMKZ or inNYPMKZ
+
+// Background shading — distinct color per window, high opacity (85) so candles stay visible.
+bgcolor(showAsiaSession and inAsiaSession ? color.new(color.gray,   85) : na, title="Asia Session")
+bgcolor(showLondonKZ    and inLondonKZ    ? color.new(color.blue,   85) : na, title="London KZ")
+bgcolor(showNYAMKZ      and inNYAMKZ      ? color.new(color.green,  85) : na, title="NY AM KZ")
+bgcolor(showNYPMKZ      and inNYPMKZ      ? color.new(color.orange, 85) : na, title="NY PM KZ")
+
+// New-day rollover marker at 00:00 UTC — small downward triangle pinned to chart top.
+plotshape(showNewDay and isNewDay, title="New Day (00:00 UTC)",
+     location=location.top, style=shape.triangledown,
+     color=color.new(color.white, 30), size=size.tiny)
