@@ -1,0 +1,2 @@
+//@version=5
+indicator("Smart Liquidity Trader V1", overlay=true)

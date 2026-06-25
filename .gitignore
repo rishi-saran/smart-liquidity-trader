@@ -1,0 +1,14 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store
+
+# Analysis data (drop CSVs here, never commit them)
+analysis/data/*
+!analysis/data/.gitkeep
+
+# Claude local settings
+.claude/settings.local.json
